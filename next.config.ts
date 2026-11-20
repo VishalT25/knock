@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   poweredByHeader: false,
+  // Baked into the browser code, so an open page can tell when the server has moved on to a newer deployment.
+  env: { NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA || "dev" },
   allowedDevOrigins: ["127.0.0.1"], // dev only: lets you test from 127.0.0.1 as well as localhost
   serverExternalPackages: ["web-push", "@electric-sql/pglite"],
   async headers() {

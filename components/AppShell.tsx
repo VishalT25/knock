@@ -6,6 +6,7 @@ import { useAppState } from "@/lib/client/useAppState";
 import { api, haptic } from "@/lib/client/api";
 import { IconDoor, IconGear, IconList, IconPeople } from "./Icons";
 import { ThemeButton } from "./Theme";
+import { isStaleBuild } from "@/lib/build";
 
 const TABS = [
   { href: "/", label: "Open", Icon: IconDoor },
@@ -82,6 +83,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {!online && state && (
           <div className="notice" data-tone="warn" role="alert">
             <span>Connection lost. You may miss a buzz. Trying again…</span>
+          </div>
+        )}
+        {state && isStaleBuild(process.env.NEXT_PUBLIC_BUILD_ID, state.build) && (
+          <div className="notice" data-tone="warn" role="status">
+            <div style={{ flex: 1 }}><strong>A new version of Knock is ready.</strong> Refresh to get it.</div>
+            <button className="btn btn-sm btn-primary" onClick={() => location.reload()}>Refresh</button>
           </div>
         )}
         {path !== "/" && <AutoOpenBanner />}

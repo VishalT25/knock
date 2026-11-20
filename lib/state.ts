@@ -4,6 +4,7 @@ import { getAutoOpen } from "./autoopen";
 import { latestCall, tick } from "./calls";
 import { pushReady } from "./push";
 import type { Me } from "./auth";
+import { SERVER_BUILD } from "./build";
 
 /** How long a finished call stays on the Open screen as a result. */
 export const RESULT_SHOW_SEC = 45;
@@ -32,6 +33,7 @@ export async function buildState(me: Me, now = new Date()) {
     },
     household: { name: settings.householdName, autoOpenMax: settings.autoOpenMax, buzzerNumber: settings.buzzerNumber },
     pushConfigured: (await pushReady()).ok,
+    build: SERVER_BUILD,
     autoOpen: autoOpen ? { until: autoOpen.until.toISOString(), byName: autoOpen.byName } : null,
     call:
       call && (active || recent)
