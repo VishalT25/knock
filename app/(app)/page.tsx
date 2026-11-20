@@ -119,7 +119,7 @@ export default function OpenScreen() {
             {push.kind === "denied"
               ? "Allow them for Knock in your phone's Settings, or you won't hear the door."
               : push.kind === "off" ? <>You won't hear the door. <Link href="/settings" style={{ fontWeight: 800 }}>Turn them on</Link>.</>
-              : push.kind === "needs-install" ? <>Add Knock to your Home Screen to hear the door. <Link href="/install" style={{ fontWeight: 800 }}>Show me how</Link>.</> : push.reason}
+              : push.kind === "needs-install" ? <>Add Knock to your Home Screen to hear the door. <span style={{ display: "block", marginTop: "0.5rem" }}><Link className="btn btn-sm btn-primary" href="/install">Show me how</Link></span></> : push.reason}
           </div>
         </div>
       )}

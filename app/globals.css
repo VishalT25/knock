@@ -420,7 +420,7 @@ button, a, input, label { touch-action: manipulation; }
 .mock-row.between { justify-content: space-between; }
 .mock-row.end { justify-content: flex-end; gap: 1rem; margin-top: 0.75rem; }
 .mock svg { width: 1.5rem; height: 1.5rem; }
-.mock .dim { opacity: 0.4; }
+.mock .dim { opacity: 0.68; } /* de-emphasised, but still readable: 4.5:1 */
 .mock-list { display: grid; border-radius: 0.875rem; background: color-mix(in oklch, var(--color-base-100) 80%, transparent); border: 1px solid var(--glass-edge); overflow: hidden; }
 .mock-list > div { padding: 0.5rem 0.75rem; font-size: 0.9375rem; font-weight: 600; }
 .mock-list > div + div { border-top: 1px solid var(--glass-edge); }

@@ -33,6 +33,7 @@ export function InviteCode({ code, hours = 24 }: { code: string; hours?: number 
         {canShare && <button className="btn btn-sm btn-outline" onClick={() => navigator.share({ title: "Join Knock", text: message }).catch(() => {})}>Share…</button>}
         <button className="btn btn-sm btn-ghost" onClick={() => copy("code")}>{done === "code" ? "Copied" : "Copy code only"}</button>
       </div>
+      <span className="sr-only" role="status" aria-live="polite">{done === "message" ? "Invite message copied" : done === "code" ? "Code copied" : ""}</span>
       <p className="t-muted" style={{ fontSize: "0.8125rem" }}>Works once, for {lasts(hours)}. This is the only time the code is shown.</p>
     </div>
   );
