@@ -107,7 +107,8 @@
   --gutter: 1rem;
   --glass-blur: blur(22px) saturate(1.7);
   /* the dock floats just above the home indicator instead of a full safe-area higher */
-  --dock-gap: max(0.875rem, calc(env(safe-area-inset-bottom) - 0.125rem));
+  /* iOS can report safe-area-inset-bottom as 0 until the first scroll, so the floor equals the usual value (about 2rem) and nothing jumps when it arrives */
+  --dock-gap: max(1.875rem, calc(env(safe-area-inset-bottom) - 0.125rem));
   --dock-h: 4.5rem;
   --head-h: calc(env(safe-area-inset-top) + 3.75rem);
 }
