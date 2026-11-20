@@ -7,6 +7,7 @@ import { AutoOpenBanner, fmtClock } from "@/components/AppShell";
 import { SignGlyph, SleepGlyph, IconBellOff } from "@/components/Icons";
 import { QuickControls } from "@/components/ExpectingAutoOpen";
 import Link from "next/link";
+import { InstallCard } from "@/components/InstallCard";
 
 type Phase = "idle" | "ringing" | "opening" | "opened" | "missed" | "fallback" | "error";
 
@@ -117,10 +118,13 @@ export default function OpenScreen() {
             <strong>{push.kind === "denied" ? "Notifications are blocked." : "Notifications are off on this phone."}</strong>{" "}
             {push.kind === "denied"
               ? "Allow them for Knock in your phone's Settings, or you won't hear the door."
-              : push.kind === "off" ? <>You won't hear the door. <Link href="/settings" style={{ fontWeight: 800 }}>Turn them on</Link>.</> : push.reason}
+              : push.kind === "off" ? <>You won't hear the door. <Link href="/settings" style={{ fontWeight: 800 }}>Turn them on</Link>.</>
+              : push.kind === "needs-install" ? <>Add Knock to your Home Screen to hear the door. <Link href="/install" style={{ fontWeight: 800 }}>Show me how</Link>.</> : push.reason}
           </div>
         </div>
       )}
+
+      {push?.kind !== "needs-install" && <InstallCard variant="banner" />}
 
       <div className="device">
         <div className="lcd" data-state={stateAttr}>

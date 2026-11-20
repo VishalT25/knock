@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { disablePush, enablePush, prefetchPushKey, pushStatus, sendTestPush, type PushStatus } from "@/lib/client/push";
 import { useAppState } from "@/lib/client/useAppState";
+import Link from "next/link";
 import { IconBell, IconBellOff } from "./Icons";
 
 /** Enable/disable push for this device, with every failure explained. */
@@ -39,6 +40,7 @@ export function NotificationsCard({ onEnabled }: { onEnabled?: () => void }) {
         </strong>
         {st.kind === "denied" && <p>Open your phone's Settings, find Knock (or this browser), and allow notifications. Then come back and reload.</p>}
         {(st.kind === "needs-install" || st.kind === "unsupported") && <p>{st.reason}</p>}
+        {st.kind === "needs-install" && <div><Link className="btn btn-sm btn-primary" href="/install">Show me how</Link></div>}
         {st.kind === "off" && <p>Without them you won't hear the door when the app is closed.{state && !state.pushConfigured && " The server has no push keys yet; ask the admin."}</p>}
         {err && <p role="alert" style={{ color: "var(--color-error)" }}>{err}</p>}
         {st.kind === "off" && <button className="btn btn-primary" disabled={busy} onClick={turnOn}>{busy ? "Asking…" : "Enable notifications"}</button>}

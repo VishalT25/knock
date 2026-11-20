@@ -9,6 +9,7 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { ThemeChooser } from "@/components/Theme";
 import { BuzzerNumberCard } from "@/components/BuzzerNumber";
 import { NotificationsCard } from "@/components/Notifications";
+import { InstallCard } from "@/components/InstallCard";
 import { QuietHoursCard } from "@/components/QuietHours";
 
 type Settings = { householdName: string; timezone: string; unlockDigit: string; escalateAfter: number; backupTimeout: number; fallbackNumber: string; autoOpenMax: number; greeting: boolean };
@@ -31,6 +32,7 @@ export default function SettingsPage() {
       <BuzzerNumberCard />
 
       <h2 className="h-section">Notifications</h2>
+      <InstallCard variant="settings" />
       <NotificationsCard />
       <QuietHoursCard />
 

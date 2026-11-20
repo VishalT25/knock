@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/client/api";
 import { IconDoor } from "@/components/Icons";
 import { NotificationsCard } from "@/components/Notifications";
+import { InstallCard } from "@/components/InstallCard";
 
 export default function JoinPage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function JoinPage() {
         <h1 className="t-title" style={{ fontSize: "1.75rem" }}>Join your household</h1>
       </div>
       <p className="t-muted">Ask the admin for an invite code. It works once.</p>
+      <InstallCard variant="join" code={code || undefined} />
       <form
         style={{ display: "grid", gap: "1rem" }}
         onSubmit={async (e) => {
