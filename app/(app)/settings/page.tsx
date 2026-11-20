@@ -11,6 +11,7 @@ import { BuzzerNumberCard } from "@/components/BuzzerNumber";
 import { NotificationsCard } from "@/components/Notifications";
 import { InstallCard } from "@/components/InstallCard";
 import { UpdateNotice } from "@/components/UpdateNotice";
+import { ClaimAdmin } from "@/components/ClaimAdmin";
 import { QuietHoursCard } from "@/components/QuietHours";
 
 type Settings = { householdName: string; timezone: string; unlockDigit: string; escalateAfter: number; backupTimeout: number; fallbackNumber: string; autoOpenMax: number; greeting: boolean };
@@ -54,7 +55,7 @@ export default function SettingsPage() {
         <button className="btn btn-outline" onClick={signOut}>Sign out of this phone</button>
       </section>
 
-      {admin ? <AdminSections /> : <p className="t-muted">Only the admin can change household settings.</p>}
+      {admin ? <AdminSections /> : <><p className="t-muted">Only an admin can change household settings.</p><ClaimAdmin /></>}
     </>
   );
 }

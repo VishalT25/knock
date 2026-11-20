@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
-import { setRole } from "@/lib/members";
+import { claimAdmin, setRole } from "@/lib/members";
 import { freshWorld } from "./helpers";
 
 let ids: Record<string, string>;
@@ -31,5 +31,21 @@ describe("promoting and demoting members", () => {
     await expect(setRole({ id: ids.Ana }, ids.Ben, "owner")).rejects.toMatchObject({ status: 400 });
     await expect(setRole({ id: ids.Ana }, "00000000-0000-0000-0000-000000000000", "admin")).rejects.toMatchObject({ status: 404 });
     expect(await roleOf("Ben")).toBe("member");
+  });
+});
+
+describe("claiming admin with the setup password", () => {
+  it("makes the caller an admin when the password matches", async () => {
+    await claimAdmin({ id: ids.Cy }, "long-secret", "long-secret");
+    expect(await roleOf("Cy")).toBe("admin");
+  });
+  it("refuses a wrong or missing password and changes nothing", async () => {
+    await expect(claimAdmin({ id: ids.Cy }, "nope", "long-secret")).rejects.toMatchObject({ status: 403 });
+    await expect(claimAdmin({ id: ids.Cy }, undefined, "long-secret")).rejects.toMatchObject({ status: 403 });
+    expect(await roleOf("Cy")).toBe("member");
+  });
+  it("refuses everything when the server has no setup password", async () => {
+    await expect(claimAdmin({ id: ids.Cy }, "", undefined)).rejects.toMatchObject({ status: 400 });
+    expect(await roleOf("Cy")).toBe("member");
   });
 });
