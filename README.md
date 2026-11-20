@@ -33,7 +33,7 @@ npm run dev:call -- --url http://localhost:3000 --id my-call
 npm test                  # routing, claim-once, auto-open, fallback, signature tests
 ```
 
-`dev:mock` sets `TELNYX_MOCK=1`: Telnyx is never contacted, actions are printed (`[telnyx:mock] send_dtmf ...`), and webhooks signed with a built-in **dev-only** key are accepted. Both are ignored when `NODE_ENV=production`. Without `DATABASE_URL`, Knock uses an embedded Postgres (PGlite) in `.knock-dev-db`.
+`dev:mock` sets `TELNYX_MOCK=1`: Telnyx is never contacted, actions are printed (`[telnyx:mock] send_dtmf ...`), and webhooks signed with a built-in **dev-only** key are accepted. Both are ignored when `NODE_ENV=production`. Without `DATABASE_URL`, Knock uses an embedded Postgres (PGlite) in `~/.knock/dev-db` (outside the project so file writes don't trigger reloads).
 
 Web push needs HTTPS (or `localhost`) and VAPID keys: `npx web-push generate-vapid-keys`.
 

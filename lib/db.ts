@@ -99,8 +99,13 @@ async function makeQuery(): Promise<Query> {
     throw new Error("DATABASE_URL is not set");
   }
   const { PGlite } = await import("@electric-sql/pglite");
-  const dir = process.env.KNOCK_PGLITE_DIR; // undefined => in-memory (tests)
-  const db = new PGlite(dir === "memory" ? undefined : (dir ?? ".knock-dev-db"));
+  // Keep the dev database OUTSIDE the project folder: writes inside it make Next's file watcher recompile and reload the page.
+  const { homedir } = await import("node:os");
+  const path = await import("node:path");
+  const fs = await import("node:fs");
+  const dir = process.env.KNOCK_PGLITE_DIR === "memory" ? undefined : (process.env.KNOCK_PGLITE_DIR ?? path.join(homedir(), ".knock", "dev-db"));
+  if (dir) fs.mkdirSync(path.dirname(dir), { recursive: true });
+  const db = new PGlite(dir);
   await db.waitReady;
   return async (text, params = []) => {
     const res = await db.query<Row>(text, params as any[]);

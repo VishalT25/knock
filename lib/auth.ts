@@ -39,8 +39,8 @@ export async function getMe(): Promise<Me | null> {
   );
   const r = rows[0];
   if (!r) return null;
-  // best-effort touch
-  q("UPDATE devices SET last_seen = now() WHERE id = $1", [r.device_id]).catch(() => {});
+  // best-effort touch, at most every 5 minutes (keeps writes, and a sleeping serverless DB, quiet)
+  q("UPDATE devices SET last_seen = now() WHERE id = $1 AND last_seen < now() - interval '5 minutes'", [r.device_id]).catch(() => {});
   return { id: r.id, name: r.name, role: r.role, deviceId: r.device_id };
 }
 

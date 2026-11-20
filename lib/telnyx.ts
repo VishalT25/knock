@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { getSettings } from "./config";
 
 /* ---------------- Webhook signature (ed25519) ---------------- */
 
@@ -100,7 +101,7 @@ export const realTelephony: Telephony = {
   async transfer(id, to) {
     await tx(`/calls/${enc(id)}/actions/transfer`, {
       to,
-      from: process.env.TELNYX_NUMBER,
+      from: (await getSettings()).buzzerNumber,
       timeout_secs: 30,
     });
   },
@@ -108,7 +109,7 @@ export const realTelephony: Telephony = {
     const json = await tx(`/calls`, {
       connection_id: process.env.TELNYX_CONNECTION_ID,
       to,
-      from: process.env.TELNYX_NUMBER,
+      from: (await getSettings()).buzzerNumber,
       client_state: Buffer.from(clientState).toString("base64"),
     });
     return { callControlId: json.data.call_control_id };

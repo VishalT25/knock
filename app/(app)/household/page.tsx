@@ -4,6 +4,7 @@ import { api } from "@/lib/client/api";
 import { useAppState } from "@/lib/client/useAppState";
 import { ExpectingControl, AutoOpenControl } from "@/components/ExpectingAutoOpen";
 import { NotificationsCard } from "@/components/Notifications";
+import { BuzzerNumberCard } from "@/components/BuzzerNumber";
 import { fmtClock } from "@/components/AppShell";
 
 type Member = { id: string; name: string; role: string; isMe: boolean; expecting: boolean; expectingUntil: string | null; devices: number; pushDevices: number };
@@ -32,6 +33,8 @@ export default function HouseholdPage() {
     <>
       <h1 className="t-title" style={{ fontSize: "1.75rem" }}>Household</h1>
       {err && <div className="notice" data-tone="error" role="alert">{err}</div>}
+
+      <BuzzerNumberCard />
 
       <section aria-label="Members">
         <ul className="panel">

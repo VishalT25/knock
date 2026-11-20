@@ -8,6 +8,7 @@ export type Settings = {
   backupTimeout: number;
   fallbackNumber: string;
   autoOpenMax: number;
+  buzzerNumber: string;
 };
 
 function envInt(name: string, def: number) {
@@ -22,6 +23,7 @@ export function envDefaults() {
     backupTimeout: envInt("BACKUP_TIMEOUT", 20),
     fallbackNumber: process.env.FALLBACK_NUMBER ?? "",
     autoOpenMax: Math.min(60, envInt("AUTO_OPEN_MAX_MINUTES", 60)),
+    buzzerNumber: process.env.TELNYX_NUMBER ?? "",
   };
 }
 
@@ -43,6 +45,7 @@ export async function getSettings(): Promise<Settings> {
     backupTimeout: h?.backup_timeout ?? d.backupTimeout,
     fallbackNumber: h?.fallback_number ?? d.fallbackNumber,
     autoOpenMax: Math.min(60, h?.auto_open_max ?? d.autoOpenMax),
+    buzzerNumber: d.buzzerNumber, // fixed by Telnyx: comes from TELNYX_NUMBER
   };
 }
 

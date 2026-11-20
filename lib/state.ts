@@ -30,7 +30,7 @@ export async function buildState(me: Me, now = new Date()) {
       quietStart: u.quiet_start ?? null,
       quietEnd: u.quiet_end ?? null,
     },
-    household: { name: settings.householdName, autoOpenMax: settings.autoOpenMax },
+    household: { name: settings.householdName, autoOpenMax: settings.autoOpenMax, buzzerNumber: settings.buzzerNumber },
     pushConfigured: pushConfigured(),
     autoOpen: autoOpen ? { until: autoOpen.until.toISOString(), byName: autoOpen.byName } : null,
     call:
