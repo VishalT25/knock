@@ -11,10 +11,13 @@ export function resetVapidCacheForTests() {
   cache = null;
 }
 
-function generate() {
+export function generate() {
   const e = crypto.createECDH("prime256v1");
   e.generateKeys();
-  return { publicKey: e.getPublicKey().toString("base64url"), privateKey: e.getPrivateKey().toString("base64url") };
+  // Node drops leading zero bytes of the private key (about 1 key in 256), but web-push needs exactly 32 bytes.
+  const priv = e.getPrivateKey();
+  const padded = Buffer.concat([Buffer.alloc(Math.max(0, 32 - priv.length)), priv]);
+  return { publicKey: e.getPublicKey().toString("base64url"), privateKey: padded.toString("base64url") };
 }
 
 /**

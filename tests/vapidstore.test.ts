@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getVapid, resetVapidCacheForTests } from "@/lib/vapid-store";
+import { generate, getVapid, resetVapidCacheForTests } from "@/lib/vapid-store";
 import { vapidProblem } from "@/lib/vapid";
 import { freshWorld } from "./helpers";
 
@@ -43,5 +43,15 @@ describe("push keys from the environment", () => {
     process.env.VAPID_PUBLIC_KEY = "truncated";
     const bad = await getVapid();
     expect(bad.ok).toBe(false);
+  });
+});
+
+describe("key generation", () => {
+  it("always yields a valid pair, even when the private key starts with a zero byte", () => {
+    // About 1 in 256 raw keys is 31 bytes long; 3000 draws makes hitting that case near certain.
+    for (let i = 0; i < 3000; i++) {
+      const g = generate();
+      expect(vapidProblem(g.publicKey, g.privateKey)).toBeNull();
+    }
   });
 });
