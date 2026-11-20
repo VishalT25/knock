@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS household (
   created_at timestamptz NOT NULL DEFAULT now(),
   CHECK (id = 1)
 );
+ALTER TABLE household ADD COLUMN IF NOT EXISTS greeting boolean;
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,

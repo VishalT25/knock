@@ -11,7 +11,7 @@ import { BuzzerNumberCard } from "@/components/BuzzerNumber";
 import { NotificationsCard } from "@/components/Notifications";
 import { QuietHoursCard } from "@/components/QuietHours";
 
-type Settings = { householdName: string; timezone: string; unlockDigit: string; escalateAfter: number; backupTimeout: number; fallbackNumber: string; autoOpenMax: number };
+type Settings = { householdName: string; timezone: string; unlockDigit: string; escalateAfter: number; backupTimeout: number; fallbackNumber: string; autoOpenMax: number; greeting: boolean };
 type Device = { id: string; userId: string; label: string | null; userName: string; push: boolean; lastSeen: string; isThisDevice: boolean };
 type Invite = { id: string; hint: string; expiresAt: string };
 type Member = { id: string; name: string; isMe: boolean };
@@ -91,6 +91,13 @@ function AdminSections() {
         </div>
         <label className="label-block"><span className="t-label">Fallback number (rings if nobody opens)</span><input className="input w-full" type="tel" value={s.fallbackNumber} onChange={(e) => set("fallbackNumber", e.target.value)} placeholder="+14155550123" /></label>
         <label className="label-block"><span className="t-label">Longest auto-open window <span className="unit">(minutes, 10 to 60)</span></span><input className="input w-full" type="number" inputMode="numeric" min={10} max={60} value={s.autoOpenMax} onChange={(e) => set("autoOpenMax", Number(e.target.value))} /></label>
+        <label className="toggle-row" style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
+          <span style={{ flex: 1 }}>
+            <span style={{ fontWeight: 700, display: "block" }}>Say "One moment please" to the visitor</span>
+            <span className="t-muted" style={{ fontSize: "0.875rem", display: "block" }}>Off by default. Telnyx adds its own automated-call announcement before spoken words on most accounts, so silence is usually better.</span>
+          </span>
+          <span className="toggle-hit"><input type="checkbox" className="toggle toggle-primary" checked={!!s.greeting} onChange={(e) => set("greeting", e.target.checked)} /></span>
+        </label>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
           <button className="btn btn-primary" onClick={save}>Save settings</button>
           <span role="status" className="t-muted">{msg}</span>

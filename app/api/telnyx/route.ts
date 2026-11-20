@@ -3,6 +3,7 @@ import { verifyTelnyxSignature, telephony } from "@/lib/telnyx";
 import { handleHangup, registerCall, runLifecycle } from "@/lib/calls";
 import { handleTestEvent } from "@/lib/testcall";
 import { db } from "@/lib/db";
+import { getSettings } from "@/lib/config";
 
 export const maxDuration = 120;
 export const dynamic = "force-dynamic";
@@ -58,7 +59,9 @@ export async function POST(req: Request) {
         if (p.direction === "incoming" || !p.direction) {
           const q = await db();
           const known = await q("SELECT status FROM calls WHERE call_control_id = $1", [ccid]);
-          if (known[0]) await telephony().speak(ccid, "One moment please.");
+          // The greeting is optional (off by default): on Telnyx Paid accounts, speech gets an automated-call
+          // announcement in front of it, so silence is the better default for a building intercom.
+          if (known[0] && (await getSettings()).greeting) await telephony().speak(ccid, "One moment please.");
         }
         break;
       }

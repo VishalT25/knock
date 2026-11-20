@@ -32,6 +32,10 @@ export const PATCH = route(async (req: Request) => {
   if (b.escalateAfter !== undefined) await set("escalate_after", int(b.escalateAfter, 0, 120, "Escalate after"));
   if (b.backupTimeout !== undefined) await set("backup_timeout", int(b.backupTimeout, 5, 120, "Backup timeout"));
   if (b.autoOpenMax !== undefined) await set("auto_open_max", int(b.autoOpenMax, 10, 60, "Auto-open maximum"));
+  if (b.greeting !== undefined) {
+    if (typeof b.greeting !== "boolean") throw new HttpError(400, "Greeting must be on or off.");
+    await set("greeting", b.greeting);
+  }
   if (b.fallbackNumber !== undefined) {
     const n = String(b.fallbackNumber).replace(/[\s()-]/g, "");
     if (n && !isE164(n)) throw new HttpError(400, "Fallback number must look like +14155550123, or be empty.");

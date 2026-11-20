@@ -79,6 +79,7 @@ The call lifecycle (escalation, backup call) runs in the webhook function after 
 | `BACKUP_TIMEOUT` | no | `20` | Seconds before the fallback number is dialled |
 | `FALLBACK_NUMBER` | no | none | Rings if nobody opens; bridged to the held call |
 | `AUTO_OPEN_MAX_MINUTES` | no | `60` | Longest auto-open window (hard cap 60) |
+| `GREETING` | no | off | `1` makes Knock say "One moment please" to the visitor. Off by default because Telnyx adds an automated-call announcement before spoken words |
 
 The last five are env defaults; the admin can change them in **Settings**, and the saved value wins.
 

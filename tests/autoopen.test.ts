@@ -48,3 +48,13 @@ describe("auto-open persistence", () => {
     expect(await cancelAutoOpen()).toBe(false);
   });
 });
+
+import { getSettings } from "@/lib/config";
+describe("greeting setting", () => {
+  it("is off by default and can be turned on", async () => {
+    const W = await freshWorld();
+    expect((await getSettings()).greeting).toBe(false);
+    await W.q("UPDATE household SET greeting = true WHERE id = 1");
+    expect((await getSettings()).greeting).toBe(true);
+  });
+});

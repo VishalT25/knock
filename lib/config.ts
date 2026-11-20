@@ -9,6 +9,7 @@ export type Settings = {
   fallbackNumber: string;
   autoOpenMax: number;
   buzzerNumber: string;
+  greeting: boolean;
 };
 
 /** Tolerate pasted env values like " +14155550123, " or "+1 (415) 555-0123": keep a leading + and digits only. */
@@ -31,6 +32,7 @@ export function envDefaults() {
     fallbackNumber: process.env.FALLBACK_NUMBER ?? "",
     autoOpenMax: Math.min(60, envInt("AUTO_OPEN_MAX_MINUTES", 60)),
     buzzerNumber: cleanNumber(process.env.TELNYX_NUMBER),
+    greeting: /^(1|true|yes|on)$/i.test((process.env.GREETING ?? "").trim()),
   };
 }
 
@@ -53,6 +55,7 @@ export async function getSettings(): Promise<Settings> {
     fallbackNumber: h?.fallback_number ?? d.fallbackNumber,
     autoOpenMax: Math.min(60, h?.auto_open_max ?? d.autoOpenMax),
     buzzerNumber: d.buzzerNumber, // fixed by Telnyx: comes from TELNYX_NUMBER
+    greeting: h?.greeting ?? d.greeting, // "One moment please" to the visitor; off by default
   };
 }
 
