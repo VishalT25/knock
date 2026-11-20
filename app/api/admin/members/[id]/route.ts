@@ -1,5 +1,7 @@
 import { HttpError, requireAdmin, route } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { readJson } from "@/lib/util";
+import { setRole } from "@/lib/members";
 
 export const dynamic = "force-dynamic";
 
@@ -10,4 +12,12 @@ export const DELETE = route(async (_req: Request, ctx: { params: Promise<{ id: s
   const q = await db();
   await q("DELETE FROM users WHERE id = $1", [id]); // devices cascade
   return Response.json({ ok: true });
+});
+
+/** Make someone an admin, or take it away: { role: "admin" | "member" }. */
+export const PATCH = route(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+  const me = await requireAdmin();
+  const { id } = await ctx.params;
+  const body = await readJson(req);
+  return Response.json(await setRole(me, id, body.role));
 });

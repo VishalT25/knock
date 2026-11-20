@@ -15,7 +15,7 @@ import { QuietHoursCard } from "@/components/QuietHours";
 type Settings = { householdName: string; timezone: string; unlockDigit: string; escalateAfter: number; backupTimeout: number; fallbackNumber: string; autoOpenMax: number; greeting: boolean };
 type Device = { id: string; userId: string; label: string | null; userName: string; push: boolean; lastSeen: string; isThisDevice: boolean };
 type Invite = { id: string; hint: string; expiresAt: string };
-type Member = { id: string; name: string; isMe: boolean };
+type Member = { id: string; name: string; role: string; isMe: boolean };
 
 export default function SettingsPage() {
   const { state } = useAppState();
@@ -138,8 +138,11 @@ function AdminSections() {
             const mine = devices.filter((d) => d.userId === m.id);
             return (
               <li key={m.id} className="row" style={{ alignItems: "flex-start", flexDirection: "column", gap: "0.5rem", padding: "0.75rem 1rem" }}>
-                <div style={{ display: "flex", width: "100%", alignItems: "center", gap: "0.75rem" }}>
-                  <p style={{ flex: 1, fontWeight: 800 }}>{m.name}{m.isMe && <span className="t-muted"> (you)</span>}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", width: "100%", alignItems: "center", gap: "0.5rem 0.5rem" }}>
+                  <p style={{ flex: "1 1 100%", fontWeight: 800 }}>{m.name}{m.isMe && <span className="t-muted"> (you)</span>}{m.role === "admin" && <span className="badge badge-warning" style={{ fontWeight: 800, marginLeft: "0.5rem" }}>Admin</span>}</p>
+                  {!m.isMe && (m.role === "admin"
+                    ? <ConfirmButton label="Remove admin" confirmLabel="Sure?" className="btn btn-sm btn-ghost" onConfirm={async () => { await api(`/api/admin/members/${m.id}`, { method: "PATCH", body: { role: "member" } }); loadPeople(); }} />
+                    : <ConfirmButton label="Make admin" confirmLabel="Make admin?" className="btn btn-sm btn-ghost" onConfirm={async () => { await api(`/api/admin/members/${m.id}`, { method: "PATCH", body: { role: "admin" } }); loadPeople(); }} />)}
                   {!m.isMe && <ConfirmButton label="Remove person" confirmLabel="Remove them?" className="btn btn-sm btn-outline btn-error" onConfirm={async () => { await api(`/api/admin/members/${m.id}`, { method: "DELETE" }); loadPeople(); }} />}
                 </div>
                 {mine.map((d) => (
