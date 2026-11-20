@@ -400,3 +400,7 @@ button, a, input, label { touch-action: manipulation; }
 .lcd-number .lcd-main { font-size: clamp(1.5rem, 7.6vw, 2.25rem); text-transform: none; white-space: nowrap; }
 .lcd-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
 .lcd-row .lcd-sub { flex: 1; font-size: 0.875rem; color: color-mix(in oklch, var(--color-base-content) 70%, transparent); }
+
+.made-by { display: flex; align-items: center; justify-content: center; gap: 0.25rem; margin-top: 0.5rem; font-weight: 600; font-size: 0.8125rem; color: color-mix(in oklch, var(--color-base-content) 62%, transparent); }
+.made-gh { display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; color: inherit; transition: background-color 0.2s; }
+.made-gh:active { background: var(--glass-tint); }
