@@ -37,51 +37,43 @@ npm test                  # routing, claim-once, auto-open, fallback, signature 
 
 Web push needs HTTPS (or `localhost`) and VAPID keys: `npx web-push generate-vapid-keys`.
 
-## Deploy to Vercel
+## Set it up
 
-1. Push this repo to GitHub, then **Add New → Project** in Vercel and import it (free Hobby tier works).
-2. Add a database: **Storage → Create → Neon (Postgres)**, connect it to the project. This sets `DATABASE_URL`. Tables are created automatically on first request.
-3. Add the environment variables below (**Settings → Environment Variables**), deploy, and note the production URL, e.g. `https://knock-yourname.vercel.app`.
-4. Set `APP_URL` to that URL and redeploy once.
-5. Do the Telnyx steps below, using `https://<your-app>/api/telnyx` as the webhook URL.
-6. Open the app URL on your phone → the setup wizard. Add it to your Home Screen (iPhone: Share → Add to Home Screen; Android: install prompt / menu → Install app), open it from there, and enable notifications.
+**The full step-by-step guide, with screenshots, is at [knockbuzzer.app/docs](https://knockbuzzer.app/docs).** It covers the Telnyx account, which is the longest part, and the mistakes people actually make. The short version:
 
-The call lifecycle (escalation, backup call) runs in the webhook function after it responds, using `maxDuration = 120`. The Open screen also nudges it forward whenever a phone is watching, so a slow function can't stall an escalation.
+1. [Check your intercom](https://knockbuzzer.app/docs/will-it-work) can work (it must call a phone number and unlock on a key press).
+2. **Deploy** with one click:
 
-## Telnyx setup
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FVishalT25%2Fknock&project-name=knock&repository-name=knock&env=SETUP_TOKEN&envDescription=Pick+any+long+password.+You+type+it+once+on+the+first-run+screen+so+nobody+else+can+claim+your+Knock.&envLink=https%3A%2F%2Fknockbuzzer.app%2Fdocs%2Fdeploy&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%7D%5D)
 
-1. **Create an account** at telnyx.com and complete verification. Add a small balance (a number costs about a dollar a month plus per-minute usage).
-2. **Buy a number**: *Numbers → Buy Numbers*, pick a local number with **Voice** enabled, and buy it.
-3. **Create a Call Control application**: *Voice → Programmable Voice → Applications → Add new app* → type **Call Control**. Set:
-   - **Webhook URL**: `https://<your-app>/api/telnyx`
-   - Webhook API version **API V2**
-   - Leave "Send DTMF with SIP INFO" off. Save, and copy the app's **ID** → `TELNYX_CONNECTION_ID`.
-4. **Assign the number** to that application (*Numbers → My Numbers → Voice → Connection or App*).
-5. **API key**: *Account → Keys & Credentials → API Keys* → create → `TELNYX_API_KEY`.
-6. **Public key**: same page, **Public Key** (base64) → `TELNYX_PUBLIC_KEY`. Knock rejects every webhook that is not signed with it.
-7. Put this number on file with your building/intercom as the number to call. Set `TELNYX_NUMBER` to it in E.164 form (`+14155550123`).
-8. If you want the fallback (a person who presses the digit by hand), set `FALLBACK_NUMBER` and make sure your Telnyx outbound voice profile allows calling it.
+   Vercel copies the code into your GitHub, attaches a free Neon database and asks for one value, `SETUP_TOKEN`: a password you invent. Notification keys are generated for you on first use. If the database isn't attached automatically, add **Neon** under your project's **Storage** tab and redeploy.
+3. [Set up Telnyx](https://knockbuzzer.app/docs/telnyx): create the account, **upgrade it to Paid** (a Trial account only accepts calls from your verified number, so your building would be rejected), buy a number, create a Call Control application with the webhook `https://<your-app>/api/telnyx` (API v2), and attach an outbound voice profile and your number.
+4. Add four environment variables in Vercel and **redeploy**:
+   `TELNYX_API_KEY`, `TELNYX_PUBLIC_KEY`, `TELNYX_CONNECTION_ID`, `TELNYX_NUMBER` (like `+14155550123`).
+5. Open your app, run first-time setup (household, checks, test call), invite your roommates, and ask your building to call your Knock number.
+
+> The Deploy button only works for other people if this repository is **public**. A private repository can only be cloned by its owner.
 
 ## Environment variables
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `DATABASE_URL` | yes | embedded dev DB | Neon/Vercel Postgres URL |
-| `APP_URL` | recommended | request origin | Public URL, used by the wizard's webhook check |
-| `SETUP_TOKEN` | **yes in production** | none | Secret that first-run setup requires, so strangers can't claim your deployment |
+| `DATABASE_URL` | yes | embedded dev DB | Postgres URL (set by the Neon integration on Vercel) |
+| `SETUP_TOKEN` | **yes in production** | none | The password first-run setup requires, so strangers can't claim a fresh deployment |
 | `TELNYX_API_KEY` | yes | | Server-side only, never sent to the browser |
-| `TELNYX_PUBLIC_KEY` | yes | | Webhook ed25519 signature verification |
-| `TELNYX_CONNECTION_ID` | for test/fallback calls | | Call Control application ID |
-| `TELNYX_NUMBER` | for test/fallback calls | | Your Telnyx number, E.164 |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | yes | | Web push (`npx web-push generate-vapid-keys`) |
+| `TELNYX_PUBLIC_KEY` | yes | | Verifies the signature on Telnyx webhooks |
+| `TELNYX_CONNECTION_ID` | yes | | The Call Control application's ID |
+| `TELNYX_NUMBER` | yes | | Your Knock number in international format. Shown in Settings; used as caller ID for test and backup calls |
 | `UNLOCK_DIGIT` | no | `9` | Tone sent to open the door |
 | `ESCALATE_AFTER` | no | `8` | Seconds before everyone is notified loudly |
-| `BACKUP_TIMEOUT` | no | `20` | Seconds before the fallback number is dialled |
+| `BACKUP_TIMEOUT` | no | `20` | Seconds before the backup number is dialled |
 | `FALLBACK_NUMBER` | no | none | Rings if nobody opens; bridged to the held call |
 | `AUTO_OPEN_MAX_MINUTES` | no | `60` | Longest auto-open window (hard cap 60) |
-| `GREETING` | no | off | `1` makes Knock say "One moment please" to the visitor. Off by default because Telnyx adds an automated-call announcement before spoken words |
+| `GREETING` | no | off | `1` makes Knock say "One moment please" to the visitor. Off by default: Telnyx adds an automated-call announcement before spoken words |
+| `APP_URL` | no | auto on Vercel | Public address, used by the setup wizard's webhook check |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | no | generated | Your own web-push keys. If you leave them out, Knock generates a pair on first use and stores it in the database. If you set one, set both (`VAPID_SUBJECT` like `mailto:you@example.com`) |
 
-The last five are env defaults; the admin can change them in **Settings**, and the saved value wins.
+The behaviour settings (digit, timings, fallback number, auto-open ceiling, greeting) can also be changed in the app's **Settings**; the saved value wins over the environment default.
 
 ## How it behaves
 
