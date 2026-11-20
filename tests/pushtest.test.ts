@@ -21,3 +21,17 @@ describe("sendToSubscription", () => {
     expect(((await sendToSubscription({}, payload)) as any).message).toMatch(/turn notifications off and on/i);
   });
 });
+
+import crypto from "node:crypto";
+describe("web-push library loads (regression: default import was undefined in production)", () => {
+  it("gets past setup and fails only on the network, not with a library error", async () => {
+    const e = crypto.createECDH("prime256v1"); e.generateKeys();
+    process.env.VAPID_PUBLIC_KEY = e.getPublicKey().toString("base64url");
+    process.env.VAPID_PRIVATE_KEY = e.getPrivateKey().toString("base64url");
+    process.env.VAPID_SUBJECT = "someone@example.com"; // bare email: must be repaired, not rejected
+    const r = await sendToSubscription({ endpoint: "https://127.0.0.1:9/none", keys: { p256dh: "BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM", auth: "tBHItJI5svbpez7KI4CCXg" } }, payload);
+    expect(r.ok).toBe(false);
+    expect((r as any).message).not.toMatch(/couldn't set up push/);
+    expect((r as any).message).not.toMatch(/undefined/);
+  });
+});

@@ -1,4 +1,7 @@
-import webpush from "web-push";
+import * as webpushModule from "web-push";
+
+// web-push is CommonJS. Depending on the bundler the API is on `.default` or on the namespace itself; take whichever exists.
+const webpush: typeof import("web-push") = ((webpushModule as unknown as { default?: typeof import("web-push") }).default ?? webpushModule) as typeof import("web-push");
 import { db } from "./db";
 import type { Mode } from "./routing";
 import { cleanKey, normalizeSubject, vapidProblem } from "./vapid";
