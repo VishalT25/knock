@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import crypto from "node:crypto";
-import { cleanKey, vapidProblem } from "@/lib/vapid";
+import { cleanKey, normalizeSubject, vapidProblem } from "@/lib/vapid";
 
 // Throwaway keys generated per run: no real key ever lives in the repo.
 const ecdh = crypto.createECDH("prime256v1");
@@ -20,5 +20,23 @@ describe("vapidProblem", () => {
     expect(vapidProblem(PUB.slice(0, 60), PRIV)).toMatch(/wrong length/);
     expect(vapidProblem(PUB, PRIV.slice(0, 20))).toMatch(/PRIVATE/);
     expect(vapidProblem("not a key!!", PRIV)).toMatch(/characters/);
+  });
+});
+
+describe("pair and subject checks", () => {
+  it("detects two valid keys that are not a pair", () => {
+    const other = crypto.createECDH("prime256v1"); other.generateKeys();
+    expect(vapidProblem(PUB, other.getPrivateKey().toString("base64url"))).toMatch(/not a pair/);
+    expect(vapidProblem(PUB, PRIV)).toBeNull();
+  });
+  it("repairs VAPID_SUBJECT values the push library would reject", () => {
+    expect(normalizeSubject("mailto:a@b.co")).toBe("mailto:a@b.co");
+    expect(normalizeSubject("a@b.co")).toBe("mailto:a@b.co");
+    expect(normalizeSubject(' "a@b.co" ')).toBe("mailto:a@b.co");
+    expect(normalizeSubject("https://example.com/x")).toBe("https://example.com/x");
+    expect(normalizeSubject("example.com")).toBe("https://example.com");
+    expect(normalizeSubject("")).toBe("mailto:admin@example.com");
+    expect(normalizeSubject(undefined)).toBe("mailto:admin@example.com");
+    expect(normalizeSubject("not valid at all")).toBe("mailto:admin@example.com");
   });
 });

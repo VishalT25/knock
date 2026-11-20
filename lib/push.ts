@@ -1,9 +1,10 @@
 import webpush from "web-push";
 import { db } from "./db";
 import type { Mode } from "./routing";
-import { cleanKey, vapidProblem } from "./vapid";
+import { cleanKey, normalizeSubject, vapidProblem } from "./vapid";
 
 let configured = false;
+let setupError = "";
 export function pushConfigured() {
   return !vapidProblem(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
 }
@@ -11,11 +12,12 @@ function configure() {
   if (configured) return true;
   if (!pushConfigured()) return false;
   try {
-    webpush.setVapidDetails((process.env.VAPID_SUBJECT || "mailto:admin@example.com").trim(), cleanKey(process.env.VAPID_PUBLIC_KEY), cleanKey(process.env.VAPID_PRIVATE_KEY));
+    webpush.setVapidDetails(normalizeSubject(process.env.VAPID_SUBJECT), cleanKey(process.env.VAPID_PUBLIC_KEY), cleanKey(process.env.VAPID_PRIVATE_KEY));
     configured = true;
     return true;
   } catch (e) {
-    console.error("VAPID setup failed:", (e as Error).message);
+    setupError = (e as Error).message;
+    console.error("VAPID setup failed:", setupError);
     return false;
   }
 }
@@ -43,7 +45,10 @@ async function defaultSender(sub: any, payload: PushPayload, opts: { urgency: "h
 
 /** One push to one subscription, with the push service's reason spelled out on failure (and logged). */
 export async function sendToSubscription(sub: any, payload: PushPayload): Promise<{ ok: true } | { ok: false; message: string; status?: number }> {
-  if (!sender && !configure()) return { ok: false, message: "The server's push keys aren't valid. Check VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in Vercel, then redeploy." };
+  if (!sender && !configure()) {
+    const why = vapidProblem(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY) ?? (setupError ? `The push library said: ${setupError}` : "");
+    return { ok: false, message: `The server couldn't set up push. ${why} Fix it in Vercel (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT) and redeploy.`.replace(/\s+/g, " ") };
+  }
   try {
     await (sender ?? defaultSender)(sub, payload, { urgency: "high", ttl: 60 });
     return { ok: true };
