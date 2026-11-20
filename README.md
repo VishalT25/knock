@@ -2,6 +2,8 @@
 
 Open your building's door from your phone. A self-hosted, open-source (MIT) PWA door buzzer for one household.
 
+**Website and full guide: [knockbuzzer.app](https://knockbuzzer.app)**
+
 When a visitor enters your unit code, the building intercom dials your Telnyx number. Knock answers, says "One moment please", holds the line, and notifies everyone in the household. The first person to tap **OPEN DOOR** wins: Knock sends the unlock tone (default `9`) and hangs up. Everyone else sees "Opened by Maya".
 
 > ## ⚠️ This app can unlock a building entrance
