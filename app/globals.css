@@ -376,3 +376,9 @@ a { text-underline-offset: 0.2em; }
 
 /* toggles: 44px hit area without changing the drawn switch */
 .toggle-hit { display: inline-grid; place-items: center; min-width: 3.5rem; min-height: 2.75rem; padding: 0.25rem 0 0.25rem 0.5rem; cursor: pointer; flex: none; }
+
+/* number readout: same dot-matrix glass as the Open screen, sized so a full phone number fits on one line */
+.lcd-number { min-height: 0; gap: 0.5rem; }
+.lcd-number .lcd-main { font-size: clamp(1.5rem, 7.6vw, 2.25rem); text-transform: none; white-space: nowrap; }
+.lcd-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.lcd-row .lcd-sub { flex: 1; font-size: 0.875rem; color: color-mix(in oklch, var(--color-base-content) 70%, transparent); }

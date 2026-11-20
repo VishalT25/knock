@@ -8,3 +8,14 @@ describe("formatPhone", () => {
     expect(formatPhone("abc")).toBe("abc");
   });
 });
+
+import { cleanNumber } from "@/lib/config";
+describe("cleanNumber", () => {
+  it("repairs pasted env values", () => {
+    expect(cleanNumber("+14155550123,")).toBe("+14155550123");
+    expect(cleanNumber(" +1 (415) 555-0123 ")).toBe("+14155550123");
+    expect(cleanNumber("14155550123")).toBe("+14155550123");
+    expect(cleanNumber(undefined)).toBe("");
+    expect(cleanNumber("")).toBe("");
+  });
+});

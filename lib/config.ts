@@ -11,6 +11,13 @@ export type Settings = {
   buzzerNumber: string;
 };
 
+/** Tolerate pasted env values like " +14155550123, " or "+1 (415) 555-0123": keep a leading + and digits only. */
+export function cleanNumber(v: string | undefined): string {
+  const t = (v ?? "").trim();
+  const digits = t.replace(/\D/g, "");
+  return digits ? (t.startsWith("+") ? "+" : "+") + digits : "";
+}
+
 function envInt(name: string, def: number) {
   const n = Number.parseInt(process.env[name] ?? "", 10);
   return Number.isFinite(n) && n >= 0 ? n : def;
@@ -23,7 +30,7 @@ export function envDefaults() {
     backupTimeout: envInt("BACKUP_TIMEOUT", 20),
     fallbackNumber: process.env.FALLBACK_NUMBER ?? "",
     autoOpenMax: Math.min(60, envInt("AUTO_OPEN_MAX_MINUTES", 60)),
-    buzzerNumber: process.env.TELNYX_NUMBER ?? "",
+    buzzerNumber: cleanNumber(process.env.TELNYX_NUMBER),
   };
 }
 

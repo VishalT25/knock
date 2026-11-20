@@ -7,6 +7,7 @@ import { useAppState } from "@/lib/client/useAppState";
 import { IconCopy } from "@/components/Icons";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { ThemeChooser } from "@/components/Theme";
+import { BuzzerNumberCard } from "@/components/BuzzerNumber";
 
 type Settings = { householdName: string; timezone: string; unlockDigit: string; escalateAfter: number; backupTimeout: number; fallbackNumber: string; autoOpenMax: number };
 type Device = { id: string; userId: string; label: string | null; userName: string; push: boolean; lastSeen: string; isThisDevice: boolean };
@@ -25,6 +26,7 @@ export default function SettingsPage() {
   return (
     <>
       <h1 className="t-title" style={{ fontSize: "1.75rem" }}>Settings</h1>
+      <BuzzerNumberCard />
       <section className="panel" style={{ padding: "0.75rem 1rem 1rem", display: "grid", gap: "0.75rem" }}>
         <h2 className="t-title" style={{ fontSize: "1.0625rem" }}>Appearance</h2>
         <ThemeChooser />
