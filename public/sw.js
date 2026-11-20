@@ -1,6 +1,6 @@
 /* Knock service worker: offline shell + web push. */
-const VERSION = "knock-v1";
-const SHELL = "knock-shell-v1";
+const VERSION = "knock-v2";
+const SHELL = "knock-shell-v2";
 const OFFLINE_URL = "/offline";
 
 self.addEventListener("install", (e) => {

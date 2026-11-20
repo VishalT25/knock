@@ -173,11 +173,11 @@ button, a, input, label { touch-action: manipulation; }
 /* ---- frame ---- */
 .frame { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: calc(var(--dock-h) + var(--dock-gap) + 1.25rem); }
 .screen { width: 100%; max-width: 34rem; margin-inline: auto; padding-inline: var(--gutter); flex: 1; display: flex; flex-direction: column; gap: 1rem; padding-block: 0.75rem 1.5rem; }
-.topbar-wrap { position: sticky; top: 0; z-index: 25; isolation: isolate; }
-.topbar-wrap::before {
-  content: ""; position: absolute; inset: 0 0 -0.5rem 0; z-index: -1; pointer-events: none;
-  /* no blur: a crisp fade so the header text and logo stay sharp */
-  background: linear-gradient(180deg, color-mix(in oklch, var(--color-base-100) 96%, transparent) 78%, transparent);
+.topbar-wrap {
+  position: sticky; top: 0; z-index: 25;
+  /* plain background, no blur and no negative-z layer behind the text: iOS rasterised the header text soft with those */
+  background: linear-gradient(180deg, color-mix(in oklch, var(--color-base-100) 96%, transparent) 82%, transparent);
+  padding-bottom: 0.5rem; -webkit-font-smoothing: antialiased;
 }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: calc(env(safe-area-inset-top) + 0.625rem) var(--gutter) 0.25rem; max-width: 34rem; width: 100%; margin-inline: auto; }
 .icon-btn { display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; }
