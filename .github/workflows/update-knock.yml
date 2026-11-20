@@ -48,9 +48,10 @@ jobs:
           BASE="${{ github.event.repository.default_branch }}"
           LINK="https://github.com/${{ github.repository }}/compare/$BASE...knock-update?expand=1"
           if [ -z "$(gh pr list --head knock-update --state open --json number -q '.[0].number')" ]; then
-            gh pr create --base "$BASE" --head knock-update \
-              --title "Update Knock" \
-              --body "A newer version of Knock is available. Merge this to update. Vercel will redeploy, and your settings and data are untouched. What's new: https://github.com/VishalT25/knock/blob/main/CHANGELOG.md" \
+            gh api "repos/${{ github.repository }}/pulls" \
+              -f title="Update Knock" -f head="knock-update" -f base="$BASE" \
+              -f body="A newer version of Knock is available. Merge this to update. Vercel will redeploy, and your settings and data are untouched. What's new: https://github.com/VishalT25/knock/blob/main/CHANGELOG.md" \
+              > /dev/null \
               || echo "Couldn't open the pull request automatically. Open it here: $LINK" >> "$GITHUB_STEP_SUMMARY"
           fi
           echo "A new version of Knock is ready. Review and merge: $LINK" >> "$GITHUB_STEP_SUMMARY"
