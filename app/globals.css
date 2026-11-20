@@ -106,6 +106,10 @@
   --settle: linear(0, 0.34 7%, 0.7 15%, 0.92 24%, 1.012 34%, 1.018 40%, 1.006 52%, 0.999 68%, 1); /* gentle spring: a hair of overshoot, like iOS */
   --gutter: 1rem;
   --glass-blur: blur(22px) saturate(1.7);
+  /* the dock floats just above the home indicator instead of a full safe-area higher */
+  --dock-gap: max(0.5rem, calc(env(safe-area-inset-bottom) - 1.5rem));
+  --dock-h: 4.5rem;
+  --head-h: calc(env(safe-area-inset-top) + 3.75rem);
 }
 
 html { color-scheme: light dark; -webkit-text-size-adjust: 100%; background: var(--color-base-100); }
@@ -142,7 +146,13 @@ input, select, button { font: inherit; }
 input { caret-color: var(--color-primary); }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--glass-edge); border-radius: 8px; }
-a { text-underline-offset: 0.2em; }
+a { text-underline-offset: 0.2em; -webkit-user-drag: none; }
+
+/* It is an app, not a document: dragging over controls must not select text or open the copy/translate menu. */
+body, button, a, .panel, .lcd, .key, .seg, .tabbar { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, [contenteditable], .selectable, .code-block, .lcd-number .lcd-main { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+img, svg { -webkit-user-drag: none; user-drag: none; }
+button, a, input, label { touch-action: manipulation; }
 
 /* ---- glass material ---- */
 .glass, .panel, .notice, .chip, .lcd, .banner, .tabbar-inner, .btn-key {
@@ -161,8 +171,15 @@ a { text-underline-offset: 0.2em; }
 .unit { font-weight: 500; }
 
 /* ---- frame ---- */
-.frame { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: calc(6.5rem + env(safe-area-inset-bottom)); }
+.frame { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: calc(var(--dock-h) + var(--dock-gap) + 1.25rem); }
 .screen { width: 100%; max-width: 34rem; margin-inline: auto; padding-inline: var(--gutter); flex: 1; display: flex; flex-direction: column; gap: 1rem; padding-block: 0.75rem 1.5rem; }
+.topbar-wrap { position: sticky; top: 0; z-index: 25; isolation: isolate; }
+.topbar-wrap::before {
+  content: ""; position: absolute; inset: 0 0 -0.75rem 0; z-index: -1; pointer-events: none;
+  -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5);
+  background: linear-gradient(180deg, color-mix(in oklch, var(--color-base-100) 94%, transparent) 70%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, #000 74%, transparent); mask-image: linear-gradient(180deg, #000 74%, transparent);
+}
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: calc(env(safe-area-inset-top) + 0.625rem) var(--gutter) 0.25rem; max-width: 34rem; width: 100%; margin-inline: auto; }
 .icon-btn { display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; }
 .icon-btn svg { width: 1.375rem; height: 1.375rem; }
@@ -172,8 +189,8 @@ a { text-underline-offset: 0.2em; }
 .dot[data-on="warn"] { background: var(--color-accent); }
 
 /* floating tab bar */
-.tabbar { position: fixed; inset-inline: 0; bottom: 0; z-index: 30; padding: 0 var(--gutter) calc(env(safe-area-inset-bottom) + 0.5rem); pointer-events: none; }
-.tabbar-inner { pointer-events: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; max-width: 30rem; margin-inline: auto; padding: 0.375rem; border-radius: 2.25rem; }
+.tabbar { position: fixed; inset-inline: 0; bottom: 0; z-index: 30; padding: 0 var(--gutter) var(--dock-gap); pointer-events: none; }
+.tabbar-inner { pointer-events: auto; touch-action: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; max-width: 30rem; margin-inline: auto; padding: 0.375rem; border-radius: 2.25rem; }
 .tabbar-inner a {
   min-height: 3.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem;
   font-size: 0.6875rem; font-weight: 600; text-decoration: none; border-radius: 1.9rem; position: relative;
@@ -200,7 +217,7 @@ a { text-underline-offset: 0.2em; }
 .banner strong { font-weight: 700; font-size: 0.9375rem; }
 .banner .count { font-family: var(--font-lcd); font-weight: 800; font-size: 1.75rem; line-height: 1; }
 .banner button { min-height: 2.75rem; padding-inline: 1.1rem; border-radius: 999px; font-weight: 700; background: var(--color-accent-content); color: var(--color-accent); }
-.banner.sticky { position: sticky; top: calc(env(safe-area-inset-top) + 0.25rem); z-index: 20; }
+.banner.sticky { position: sticky; top: calc(var(--head-h) + 0.125rem); z-index: 20; }
 .notice { display: flex; gap: 0.75rem; padding: 0.875rem 1rem; border-radius: 1.5rem; }
 .notice svg { flex: none; width: 1.4rem; height: 1.4rem; margin-top: 0.1rem; }
 .notice[data-tone="warn"] > svg { box-sizing: content-box; padding: 0.3rem; margin-top: 0; background: var(--color-accent); color: var(--color-accent-content); border-radius: 0.65rem; }
@@ -319,10 +336,11 @@ a { text-underline-offset: 0.2em; }
 
 /* dock: the pressed tab swells like glass being pushed up, its neighbours give way a little */
 .tabbar-inner a { transition: transform 0.7s var(--settle), color 0.25s; }
-.tabbar-inner a[data-pressed] { transform: scale(1.12); transition-duration: 0.25s; transition-timing-function: var(--ease-out); }
-.tabbar-inner:has(a[data-pressed]) a:not([data-pressed]) { transform: scale(0.96); }
-.tabbar-inner:has(a[data-pressed]) .tab-ind { scale: 1.07 1.1; }
-.tabbar-inner:has(a[data-pressed]) { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 var(--glass-edge), 0 14px 36px -12px var(--glass-shadow); }
+.tabbar-inner a[data-hot] { transform: scale(1.14); transition-duration: 0.25s; transition-timing-function: var(--ease-out); color: var(--color-base-content); }
+.tabbar-inner[data-dragging="true"] a:not([data-hot]) { transform: scale(0.95); }
+.tabbar-inner[data-dragging="true"] .tab-ind { transition: scale 0.45s var(--ease-out), background-color 0.3s; scale: 1.05 1.1; background: color-mix(in oklch, var(--color-primary) 34%, var(--glass-tint-strong)); }
+.tabbar-inner[data-dragging="true"] { box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 var(--glass-edge), 0 16px 40px -12px var(--glass-shadow); }
+.tabbar-inner a { -webkit-tap-highlight-color: transparent; outline-offset: -2px; }
 
 /* chips, icon buttons, buttons */
 .seg button, .icon-btn, .btn { transition: transform 0.7s var(--settle), background-color 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out), color 0.3s; }

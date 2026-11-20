@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useAppState } from "@/lib/client/useAppState";
-import { api } from "@/lib/client/api";
+import { api, haptic } from "@/lib/client/api";
 import { IconDoor, IconGear, IconList, IconPeople } from "./Icons";
 import { ThemeButton } from "./Theme";
 
@@ -57,11 +57,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const { state, online } = useAppState();
   const ringing = state?.call?.status === "ringing";
-  const activeIdx = Math.max(0, TABS.findIndex((t) => t.href === path));
   return (
     <div className="frame">
       <div className="glow" data-glow={ringing ? "ring" : state?.call?.status === "opened" ? "opened" : "idle"} aria-hidden />
-      <header className="topbar">
+      <header className="topbar-wrap">
+      <div className="topbar">
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", minWidth: 0 }}>
           <span className="logo-mark"><IconDoor /></span>
           <div style={{ minWidth: 0 }}>
@@ -76,6 +76,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </span>
           <ThemeButton />
         </div>
+      </div>
       </header>
       <main className="screen" style={{ paddingBottom: "1rem" }}>
         {!online && state && (
@@ -86,19 +87,93 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {path !== "/" && <AutoOpenBanner />}
         {state ? <div className="route" key={path}>{children}</div> : <Loading />}
       </main>
-      <nav className="tabbar" aria-label="Main">
-        <div className="tabbar-inner" style={{ ["--i" as string]: activeIdx }}>
-          <span className="tab-ind" aria-hidden />
-        {TABS.map(({ href, label, Icon }) => (
-          <Link key={href} href={href} aria-current={path === href ? "page" : undefined}>
+      <Dock path={path} ringing={ringing && path !== "/"} />
+    </div>
+  );
+}
+
+
+/**
+ * Floating glass dock. Tap a tab, or press anywhere on the dock and slide: the glass capsule follows your finger
+ * (it can sit between tabs), and the tab under it is opened when you let go.
+ */
+function Dock({ path, ringing }: { path: string; ringing: boolean }) {
+  const router = useRouter();
+  const ref = useRef<HTMLDivElement>(null);
+  const activeIdx = Math.max(0, TABS.findIndex((t) => t.href === path));
+  const [pos, setPos] = useState<number | null>(null); // fractional tab index while a finger is down
+  const [landing, setLanding] = useState<number | null>(null); // where it was released, until the route catches up
+  const drag = useRef<{ id: number } | null>(null);
+  const lastIdx = useRef(-1);
+
+  useEffect(() => setLanding(null), [path]);
+
+  const posFromX = (clientX: number) => {
+    const r = ref.current!.getBoundingClientRect();
+    const pad = 6, gap = 4; // matches .tabbar-inner padding / gap (0.375rem / 0.25rem)
+    const col = (r.width - pad * 2 - gap * 3) / 4;
+    return Math.min(3, Math.max(0, (clientX - r.left - pad - col / 2) / (col + gap)));
+  };
+
+  const down = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    ref.current?.setPointerCapture(e.pointerId);
+    drag.current = { id: e.pointerId };
+    const p = posFromX(e.clientX);
+    lastIdx.current = Math.round(p);
+    setPos(p);
+    haptic(8);
+  };
+  const move = (e: React.PointerEvent) => {
+    if (!drag.current || drag.current.id !== e.pointerId) return;
+    const p = posFromX(e.clientX);
+    setPos(p);
+    const idx = Math.round(p);
+    if (idx !== lastIdx.current) { lastIdx.current = idx; haptic(6); }
+  };
+  const up = (e: React.PointerEvent) => {
+    if (!drag.current || drag.current.id !== e.pointerId) return;
+    drag.current = null;
+    const idx = Math.round(posFromX(e.clientX));
+    setPos(null);
+    setLanding(idx);
+    if (TABS[idx].href !== path) router.push(TABS[idx].href);
+  };
+  const cancel = () => { drag.current = null; setPos(null); };
+
+  const shown = pos ?? landing ?? activeIdx;
+  const hot = pos !== null ? Math.round(pos) : -1;
+  return (
+    <nav className="tabbar" aria-label="Main">
+      <div
+        ref={ref}
+        className="tabbar-inner"
+        data-dragging={pos !== null}
+        style={{ ["--i" as string]: shown }}
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={cancel}
+        onLostPointerCapture={cancel}
+      >
+        <span className="tab-ind" aria-hidden />
+        {TABS.map(({ href, label, Icon }, i) => (
+          <Link
+            key={href}
+            href={href}
+            draggable={false}
+            aria-current={path === href ? "page" : undefined}
+            data-hot={hot === i}
+            // Pointer taps and slides are handled above; only keyboard activation (detail 0) follows the link.
+            onClick={(e) => { if (e.detail !== 0) e.preventDefault(); }}
+          >
             <Icon />
             {label}
-            {href === "/" && ringing && path !== "/" && <span className="tab-dot" aria-label="Someone is at the door" />}
+            {href === "/" && ringing && <span className="tab-dot" aria-label="Someone is at the door" />}
           </Link>
         ))}
-        </div>
-      </nav>
-    </div>
+      </div>
+    </nav>
   );
 }
 

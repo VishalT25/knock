@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 
 /** Elements that behave like liquid glass under a finger. */
-const LIVE = ".key, .btn-key, .seg button, .tabbar-inner a, .icon-btn, .btn, .disclosure-head";
+const LIVE = ".key, .btn-key, .seg button, .icon-btn, .btn, .disclosure-head"; // the dock runs its own slider gesture
 
 /**
  * Registers the service worker and wires "live glass" press feedback:
@@ -38,12 +38,16 @@ export function Boot() {
       if (!inside) return release();
       place(active, e);
     };
+    // No native drag-and-drop ghosts of links/images, no long-press callouts on the app chrome.
+    const noDrag = (e: Event) => { if ((e.target as Element | null)?.closest("a, img, button")) e.preventDefault(); };
+    document.addEventListener("dragstart", noDrag);
     document.addEventListener("pointerdown", down, { passive: true });
     document.addEventListener("pointermove", move, { passive: true });
     document.addEventListener("pointerup", release, { passive: true });
     document.addEventListener("pointercancel", release, { passive: true });
     window.addEventListener("blur", release);
     return () => {
+      document.removeEventListener("dragstart", noDrag);
       document.removeEventListener("pointerdown", down);
       document.removeEventListener("pointermove", move);
       document.removeEventListener("pointerup", release);
