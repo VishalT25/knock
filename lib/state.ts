@@ -2,7 +2,7 @@ import { db } from "./db";
 import { getSettings } from "./config";
 import { getAutoOpen } from "./autoopen";
 import { latestCall, tick } from "./calls";
-import { pushConfigured } from "./push";
+import { pushReady } from "./push";
 import type { Me } from "./auth";
 
 /** How long a finished call stays on the Open screen as a result. */
@@ -31,7 +31,7 @@ export async function buildState(me: Me, now = new Date()) {
       quietEnd: u.quiet_end ?? null,
     },
     household: { name: settings.householdName, autoOpenMax: settings.autoOpenMax, buzzerNumber: settings.buzzerNumber },
-    pushConfigured: pushConfigured(),
+    pushConfigured: (await pushReady()).ok,
     autoOpen: autoOpen ? { until: autoOpen.until.toISOString(), byName: autoOpen.byName } : null,
     call:
       call && (active || recent)

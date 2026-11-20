@@ -72,6 +72,11 @@ CREATE TABLE IF NOT EXISTS auto_open (
   enabled_by_name text,
   CHECK (id = 1)
 );
+CREATE TABLE IF NOT EXISTS secrets (
+  key text PRIMARY KEY,
+  value text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
 CREATE TABLE IF NOT EXISTS rate_limits (
   key text PRIMARY KEY,
   window_start timestamptz NOT NULL,

@@ -4,25 +4,30 @@ import * as webpushModule from "web-push";
 const webpush: typeof import("web-push") = ((webpushModule as unknown as { default?: typeof import("web-push") }).default ?? webpushModule) as typeof import("web-push");
 import { db } from "./db";
 import type { Mode } from "./routing";
-import { cleanKey, normalizeSubject, vapidProblem } from "./vapid";
+import { getVapid } from "./vapid-store";
 
-let configured = false;
-let setupError = "";
-export function pushConfigured() {
-  return !vapidProblem(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
-}
-function configure() {
-  if (configured) return true;
-  if (!pushConfigured()) return false;
-  try {
-    webpush.setVapidDetails(normalizeSubject(process.env.VAPID_SUBJECT), cleanKey(process.env.VAPID_PUBLIC_KEY), cleanKey(process.env.VAPID_PRIVATE_KEY));
-    configured = true;
-    return true;
-  } catch (e) {
-    setupError = (e as Error).message;
-    console.error("VAPID setup failed:", setupError);
-    return false;
+let configuredFor = "";
+type Ready = { ok: true; source: "env" | "generated" } | { ok: false; message: string };
+
+/** Load the push keys (environment, or generated and stored) and hand them to the push library. */
+async function configure(): Promise<Ready> {
+  const v = await getVapid();
+  if (!v.ok) return { ok: false, message: v.problem };
+  if (configuredFor !== v.publicKey) {
+    try {
+      webpush.setVapidDetails(v.subject, v.publicKey, v.privateKey);
+      configuredFor = v.publicKey;
+    } catch (e) {
+      console.error("VAPID setup failed:", (e as Error).message);
+      return { ok: false, message: `The push library said: ${(e as Error).message}` };
+    }
   }
+  return { ok: true, source: v.source };
+}
+
+export async function pushReady(): Promise<{ ok: boolean; problem: string | null }> {
+  const c = await configure();
+  return c.ok ? { ok: true, problem: null } : { ok: false, problem: c.message };
 }
 
 export type PushPayload = {
@@ -48,9 +53,9 @@ async function defaultSender(sub: any, payload: PushPayload, opts: { urgency: "h
 
 /** One push to one subscription, with the push service's reason spelled out on failure (and logged). */
 export async function sendToSubscription(sub: any, payload: PushPayload): Promise<{ ok: true } | { ok: false; message: string; status?: number }> {
-  if (!sender && !configure()) {
-    const why = vapidProblem(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY) ?? (setupError ? `The push library said: ${setupError}` : "");
-    return { ok: false, message: `The server couldn't set up push. ${why} Fix it in Vercel (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT) and redeploy.`.replace(/\s+/g, " ") };
+  if (!sender) {
+    const c = await configure();
+    if (!c.ok) return { ok: false, message: `The server couldn't set up push. ${c.message} If you set VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY yourself, fix them in Vercel (or delete both so Knock generates its own) and redeploy.`.replace(/\s+/g, " ") };
   }
   try {
     await (sender ?? defaultSender)(sub, payload, { urgency: "high", ttl: 60 });
@@ -60,7 +65,7 @@ export async function sendToSubscription(sub: any, payload: PushPayload): Promis
     const body = typeof e?.body === "string" ? e.body.slice(0, 200) : "";
     console.error("push send failed", status, body || e?.message);
     const hint =
-      status === 403 || status === 401 ? "The push service rejected the server's keys. Make sure VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in Vercel are the matching pair, then turn notifications off and on again on this phone."
+      status === 403 || status === 401 ? "The push service rejected the server's keys. If you set VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY yourself, make sure they are the matching pair. Then turn notifications off and on again on this phone."
       : status === 404 || status === 410 ? "This phone's subscription expired. Turn notifications off and on again."
       : status === 400 ? "The push service rejected the request. If you changed the push keys, turn notifications off and on again on this phone."
       : `Push failed: ${e?.message ?? "unknown error"}`;
@@ -82,7 +87,7 @@ export async function pushToUsers(userIds: string[] | "all", payload: PushPayloa
       : userIds.length === 0
         ? []
         : await q("SELECT d.id, d.user_id, d.push_sub FROM devices d WHERE d.revoked_at IS NULL AND d.push_sub IS NOT NULL AND d.user_id = ANY($1::uuid[])", [userIds]);
-  if (!sender && !configure()) {
+  if (!sender && !(await configure()).ok) {
     for (const r of rows) sentLog.push({ userId: r.user_id, payload });
     return { sent: 0, skipped: rows.length };
   }

@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { sendToSubscription, setPushSenderForTests } from "@/lib/push";
+import { resetVapidCacheForTests } from "@/lib/vapid-store";
+import { freshWorld } from "./helpers";
 
 afterEach(() => setPushSenderForTests(null));
 const payload = { kind: "test" as const, title: "t", body: "b" };
@@ -25,6 +27,9 @@ describe("sendToSubscription", () => {
 import crypto from "node:crypto";
 describe("web-push library loads (regression: default import was undefined in production)", () => {
   it("gets past setup and fails only on the network, not with a library error", async () => {
+    await freshWorld();
+    setPushSenderForTests(null); // freshWorld installs a fake sender; this test must use the real library
+    resetVapidCacheForTests();
     const e = crypto.createECDH("prime256v1"); e.generateKeys();
     process.env.VAPID_PUBLIC_KEY = e.getPublicKey().toString("base64url");
     process.env.VAPID_PRIVATE_KEY = e.getPrivateKey().toString("base64url");
