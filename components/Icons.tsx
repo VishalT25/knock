@@ -19,6 +19,7 @@ export const IconCopy = (p: P) => (<svg {...base} {...p}><rect x="9" y="9" width
 export const IconShare = (p: P) => (<svg {...base} {...p}><path d="M12 15V3.5M8 7l4-4 4 4" /><path d="M7 10.5H6a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6.500a2 2 0 0 0-2-2h-1" /></svg>);
 export const IconPlusSquare = (p: P) => (<svg {...base} {...p}><rect x="3.500" y="3.500" width="17" height="17" rx="4" /><path d="M12 8v8M8 12h8" /></svg>);
 export const IconDotsV = (p: P) => (<svg {...base} {...p}><path d="M12 5h.01M12 12h.01M12 19h.01" strokeWidth={3} /></svg>);
+export const IconBook = (p: P) => (<svg {...base} {...p}><path d="M4 5.500C4 5 4.500 4.500 5 4.500H11v15H5c-.5 0-1-.5-1-1zM20 5.500c0-.5-.5-1-1-1h-6v15h6c.5 0 1-.5 1-1z" /></svg>);
 export const IconDownload = (p: P) => (<svg {...base} {...p}><path d="M12 4v11M7.500 10.500L12 15l4.500-4.500" /><path d="M5 19.500h14" /></svg>);
 
 /** The wayfinding glyph: a door that swings open, with an exit arrow. Authored for the sign. */

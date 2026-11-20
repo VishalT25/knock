@@ -2,13 +2,21 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/client/api";
-import { IconAlert, IconCheck, IconDoor, IconX, IconClock } from "@/components/Icons";
+import { IconAlert, IconBook, IconCheck, IconDoor, IconX, IconClock } from "@/components/Icons";
 import { NotificationsCard } from "@/components/Notifications";
 
 type Check = { id: string; label: string; ok: boolean; detail: string };
 type Steps = { dialed?: boolean; answered?: boolean; spoke?: boolean; held?: boolean; tone?: boolean; ended?: boolean };
 
 const STEP_NAMES = ["Household", "Checks", "Test call", "Phones"];
+const DOCS = process.env.NEXT_PUBLIC_DOCS_URL ?? "https://knockbuzzer.app/docs";
+/** The guide page that matches each setup step. */
+const GUIDE: { path: string; what: string }[] = [
+  { path: "first-run", what: "Fill this in, then Knock checks your Telnyx connection." },
+  { path: "telnyx/connect", what: "Red crosses mean a Telnyx key or setting is missing. The guide shows where each one goes." },
+  { path: "first-run", what: "Knock calls your phone to prove the whole line works." },
+  { path: "roommates", what: "Invite your roommates and put Knock on their Home Screens." },
+];
 
 export default function SetupPage() {
   return (
@@ -55,6 +63,10 @@ function Wizard() {
           </li>
         ))}
       </ol>
+      <a className="notice guide-link" href={`${DOCS}/${GUIDE[step].path}`} target="_blank" rel="noopener noreferrer">
+        <IconBook />
+        <span><strong>Follow the setup guide.</strong> {GUIDE[step].what} <u>Open the guide</u></span>
+      </a>
       {info.mock && <div className="notice" data-tone="warn">Mock mode: no real Telnyx calls are made. This is for local development.</div>}
       {step === 0 && <StepHousehold info={info} onDone={() => setStep(1)} />}
       {step === 1 && <StepChecks onNext={() => setStep(2)} />}
@@ -86,7 +98,7 @@ function StepHousehold({ info, onDone }: { info: { tokenRequired: boolean; token
       {info.tokenMissingOnServer && <div className="notice" data-tone="error" role="alert"><IconAlert /><span>The server has no <code>SETUP_TOKEN</code> set. Add one in your environment variables and redeploy before continuing.</span></div>}
       <label className="label-block"><span className="t-label">Household name</span><input className="input w-full" required maxLength={32} value={householdName} onChange={(e) => setH(e.target.value)} placeholder="Flat 4B" autoComplete="off" /></label>
       <label className="label-block"><span className="t-label">Your name</span><input className="input w-full" required maxLength={32} value={adminName} onChange={(e) => setA(e.target.value)} placeholder="Sam" autoComplete="given-name" /></label>
-      {info.tokenRequired && <label className="label-block"><span className="t-label">Setup token (the SETUP_TOKEN env var)</span><input className="input w-full" type="password" required value={token} onChange={(e) => setT(e.target.value)} autoComplete="off" /></label>}
+      {info.tokenRequired && <label className="label-block"><span className="t-label">Setup password</span><span className="t-muted" style={{ fontSize: "0.875rem" }}>The <code>SETUP_TOKEN</code> you chose when you deployed on Vercel. Forgot it? Vercel, your project, Settings, Environment Variables.</span><input className="input w-full" type="password" required value={token} onChange={(e) => setT(e.target.value)} autoComplete="off" /></label>}
       {err && <div className="notice" data-tone="error" role="alert">{err}</div>}
       <button className="btn btn-primary btn-lg" disabled={busy}>{busy ? "Creating…" : "Create household"}</button>
     </form>
