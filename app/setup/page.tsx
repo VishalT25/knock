@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/client/api";
 import { IconAlert, IconBook, IconCheck, IconDoor, IconX, IconClock } from "@/components/Icons";
 import { NotificationsCard } from "@/components/Notifications";
+import { InviteCode } from "@/components/InviteCode";
 
 type Check = { id: string; label: string; ok: boolean; detail: string };
 type Steps = { dialed?: boolean; answered?: boolean; spoke?: boolean; held?: boolean; tone?: boolean; ended?: boolean };
@@ -201,8 +202,8 @@ function StepPhones({ onDone }: { onDone: () => void }) {
       <NotificationsCard />
       <section className="panel" style={{ padding: "0.75rem 1rem 1rem", display: "grid", gap: "0.75rem" }}>
         <h2 className="t-title" style={{ fontSize: "1.0625rem" }}>Invite a roommate</h2>
-        <p className="t-muted" style={{ fontSize: "0.875rem" }}>Send them the app link and this code. It works once and expires in 24 hours. You can make more in Settings.</p>
-        {code ? <div className="code-block t-num">{code}</div> : (
+        <p className="t-muted" style={{ fontSize: "0.875rem" }}>Roommates open your Knock link on their phone and enter a code. You can make more in Settings.</p>
+        {code ? <InviteCode code={code} hours={24} /> : (
           <button className="btn btn-outline" onClick={async () => { try { setCode((await api<{ code: string }>("/api/admin/invites", { body: { hours: 24 } })).code); } catch (e) { setErr((e as Error).message); } }}>Make an invite code</button>
         )}
         {err && <p role="alert" style={{ color: "var(--color-error)" }}>{err}</p>}

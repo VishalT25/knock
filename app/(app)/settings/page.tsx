@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/client/api";
 import { useAppState } from "@/lib/client/useAppState";
-import { IconCopy } from "@/components/Icons";
+import { InviteCode } from "@/components/InviteCode";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { ThemeChooser } from "@/components/Theme";
 import { BuzzerNumberCard } from "@/components/BuzzerNumber";
@@ -67,7 +67,6 @@ function AdminSections() {
   const [members, setMembers] = useState<Member[]>([]);
   const [code, setCode] = useState<{ code: string; hours: number } | null>(null);
   const [hours, setHours] = useState(24);
-  const [copied, setCopied] = useState(false);
 
   const loadPeople = () => api<{ devices: Device[]; invites: Invite[]; members: Member[] }>("/api/household").then((r) => { setDevices(r.devices); setInvites(r.invites); setMembers(r.members); });
   useEffect(() => { api<Settings>("/api/admin/settings").then(setS).catch((e) => setMsg(e.message)); loadPeople(); }, []);
@@ -114,14 +113,8 @@ function AdminSections() {
             <button key={h as number} aria-pressed={hours === h} onClick={() => setHours(h as number)}>{l}</button>
           ))}
         </div>
-        <button className="btn btn-primary" onClick={async () => { const r = await api<{ code: string; hours: number }>("/api/admin/invites", { body: { hours } }); setCode(r); setCopied(false); loadPeople(); }}>Make an invite code</button>
-        {code && (
-          <div style={{ display: "grid", gap: "0.5rem" }}>
-            <div className="code-block t-num" aria-label={`Invite code ${code.code}`}>{code.code}</div>
-            <button className="btn btn-outline" onClick={async () => { try { await navigator.clipboard.writeText(code.code); setCopied(true); } catch { setCopied(false); } }}><IconCopy width={18} height={18} /> {copied ? "Copied" : "Copy code"}</button>
-            <p className="t-muted" style={{ fontSize: "0.8125rem" }}>Works once, for {code.hours === 168 ? "7 days" : code.hours === 24 ? "24 hours" : "1 hour"}. This is the only time it is shown.</p>
-          </div>
-        )}
+        <button className="btn btn-primary" onClick={async () => { const r = await api<{ code: string; hours: number }>("/api/admin/invites", { body: { hours } }); setCode(r); loadPeople(); }}>Make an invite code</button>
+        {code && <InviteCode code={code.code} hours={code.hours} />}
         {invites.length > 0 && (
           <div>
             <p className="t-label">Waiting to be used</p>
