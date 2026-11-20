@@ -107,7 +107,7 @@
   --gutter: 1rem;
   --glass-blur: blur(22px) saturate(1.7);
   /* the dock floats just above the home indicator instead of a full safe-area higher */
-  --dock-gap: max(0.5rem, calc(env(safe-area-inset-bottom) - 1.5rem));
+  --dock-gap: max(0.875rem, calc(env(safe-area-inset-bottom) - 0.125rem));
   --dock-h: 4.5rem;
   --head-h: calc(env(safe-area-inset-top) + 3.75rem);
 }
@@ -175,10 +175,9 @@ button, a, input, label { touch-action: manipulation; }
 .screen { width: 100%; max-width: 34rem; margin-inline: auto; padding-inline: var(--gutter); flex: 1; display: flex; flex-direction: column; gap: 1rem; padding-block: 0.75rem 1.5rem; }
 .topbar-wrap { position: sticky; top: 0; z-index: 25; isolation: isolate; }
 .topbar-wrap::before {
-  content: ""; position: absolute; inset: 0 0 -0.75rem 0; z-index: -1; pointer-events: none;
-  -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5);
-  background: linear-gradient(180deg, color-mix(in oklch, var(--color-base-100) 94%, transparent) 70%, transparent);
-  -webkit-mask-image: linear-gradient(180deg, #000 74%, transparent); mask-image: linear-gradient(180deg, #000 74%, transparent);
+  content: ""; position: absolute; inset: 0 0 -0.5rem 0; z-index: -1; pointer-events: none;
+  /* no blur: a crisp fade so the header text and logo stay sharp */
+  background: linear-gradient(180deg, color-mix(in oklch, var(--color-base-100) 96%, transparent) 78%, transparent);
 }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: calc(env(safe-area-inset-top) + 0.625rem) var(--gutter) 0.25rem; max-width: 34rem; width: 100%; margin-inline: auto; }
 .icon-btn { display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; }
