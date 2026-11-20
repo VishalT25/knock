@@ -10,6 +10,7 @@ import { ThemeChooser } from "@/components/Theme";
 import { BuzzerNumberCard } from "@/components/BuzzerNumber";
 import { NotificationsCard } from "@/components/Notifications";
 import { InstallCard } from "@/components/InstallCard";
+import { UpdateNotice } from "@/components/UpdateNotice";
 import { QuietHoursCard } from "@/components/QuietHours";
 
 type Settings = { householdName: string; timezone: string; unlockDigit: string; escalateAfter: number; backupTimeout: number; fallbackNumber: string; autoOpenMax: number; greeting: boolean };
@@ -149,6 +150,8 @@ function AdminSections() {
           })}
         </ul>
       </section>
+
+      <UpdateNotice />
 
       <h2 className="h-section">Check the connection</h2>
       <Link className="btn btn-outline" href="/setup?recheck=1">Run checks and a test call</Link>

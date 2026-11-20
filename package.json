@@ -1,6 +1,6 @@
 {
   "name": "knock",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "license": "MIT",
   "description": "Self-hosted PWA door buzzer: let anyone in your household open the building door from their phone.",

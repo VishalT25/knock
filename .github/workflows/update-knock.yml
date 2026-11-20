@@ -1,0 +1,56 @@
+name: Update Knock
+
+# Once a week (and whenever you press "Run workflow"), check whether a newer Knock exists. If it does, this opens a
+# pull request in YOUR repository with the new code. Nothing changes until you merge it. When you do, Vercel
+# redeploys your copy automatically. Your settings and data are not in the code, so they are not affected.
+on:
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    # Do nothing in the original Knock repository itself.
+    if: github.repository != 'VishalT25/knock'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bring in the latest Knock
+        id: sync
+        run: |
+          git config user.name "knock-updater"
+          git config user.email "knock-updater@users.noreply.github.com"
+          BASE="${{ github.event.repository.default_branch }}"
+          git checkout -B knock-update
+          # Fetch the updater from the Knock project each time, so older copies that don't have it still work.
+          curl -fsSL https://raw.githubusercontent.com/VishalT25/knock/main/scripts/sync-upstream.sh -o "$RUNNER_TEMP/sync-upstream.sh"
+          bash "$RUNNER_TEMP/sync-upstream.sh" | tee "$RUNNER_TEMP/sync.log"
+          if git diff --quiet "origin/$BASE"...HEAD; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Already up to date." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git push --force origin knock-update
+          fi
+
+      - name: Open a pull request
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BASE="${{ github.event.repository.default_branch }}"
+          LINK="https://github.com/${{ github.repository }}/compare/$BASE...knock-update?expand=1"
+          if [ -z "$(gh pr list --head knock-update --state open --json number -q '.[0].number')" ]; then
+            gh pr create --base "$BASE" --head knock-update \
+              --title "Update Knock" \
+              --body "A newer version of Knock is available. Merge this to update. Vercel will redeploy, and your settings and data are untouched. What's new: https://github.com/VishalT25/knock/blob/main/CHANGELOG.md" \
+              || echo "Couldn't open the pull request automatically. Open it here: $LINK" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "A new version of Knock is ready. Review and merge: $LINK" >> "$GITHUB_STEP_SUMMARY"
