@@ -117,7 +117,7 @@ export default function OpenScreen() {
             <strong>{push.kind === "denied" ? "Notifications are blocked." : "Notifications are off on this phone."}</strong>{" "}
             {push.kind === "denied"
               ? "Allow them for Knock in your phone's Settings, or you won't hear the door."
-              : push.kind === "off" ? <>You won't hear the door. <Link href="/household" style={{ fontWeight: 800 }}>Turn them on</Link>.</> : push.reason}
+              : push.kind === "off" ? <>You won't hear the door. <Link href="/settings" style={{ fontWeight: 800 }}>Turn them on</Link>.</> : push.reason}
           </div>
         </div>
       )}
