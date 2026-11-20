@@ -1,0 +1,36 @@
+{
+  "name": "knock",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Self-hosted PWA door buzzer: let anyone in your household open the building door from their phone.",
+  "scripts": {
+    "dev": "next dev",
+    "dev:mock": "TELNYX_MOCK=1 next dev",
+    "dev:call": "tsx scripts/simulate-call.ts",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.1",
+    "next": "^16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "web-push": "^4.0.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.17",
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/web-push": "^3.6.4",
+    "daisyui": "^5.8.1",
+    "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  }
+}
