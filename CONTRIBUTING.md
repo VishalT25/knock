@@ -5,7 +5,7 @@ Thanks for helping. Knock is small on purpose: one household, one door.
 ## Run it locally
 ```bash
 npm install
-npm run dev        # uses an in-process database and a mock phone line (TELNYX_MOCK=1)
+npm run dev:mock   # embedded database and a mock phone line (no Telnyx needed)
 npm test           # routing, claim-once, auto-open, webhook signatures, push
 ```
 
