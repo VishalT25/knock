@@ -1,12 +1,14 @@
 import { requireMe, route, HttpError } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { readJson } from "@/lib/util";
+import { cleanKey, vapidProblem } from "@/lib/vapid";
 
 export const dynamic = "force-dynamic";
 
 export const GET = route(async () => {
   await requireMe();
-  return Response.json({ publicKey: process.env.VAPID_PUBLIC_KEY ?? null });
+  const problem = vapidProblem(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+  return Response.json({ publicKey: problem ? null : cleanKey(process.env.VAPID_PUBLIC_KEY), problem });
 });
 
 export const POST = route(async (req: Request) => {

@@ -60,9 +60,9 @@ self.addEventListener("push", (e) => {
     data: { url: d.url || "/", callId: d.callId || null },
     timestamp: Date.now(),
   };
-  if (kind === "ring") {
-    Object.assign(opts, { renotify: true, requireInteraction: true, vibrate: [220, 90, 220, 90, 420], silent: false });
-    if (isAndroid) opts.actions = [{ action: "open", title: "Open door" }];
+  if (kind === "ring" || kind === "test") {
+    Object.assign(opts, { renotify: true, requireInteraction: kind === "ring", vibrate: [220, 90, 220, 90, 420], silent: false });
+    if (isAndroid && kind === "ring") opts.actions = [{ action: "open", title: "Open door" }];
   } else {
     // quiet ping / door opened / info: no sound, no vibration, replaces the loud one with the same tag
     Object.assign(opts, { silent: true, renotify: false, requireInteraction: false, vibrate: [] });
@@ -72,7 +72,8 @@ self.addEventListener("push", (e) => {
       await self.registration.showNotification(d.title || "Knock", opts);
       const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
       clients.forEach((c) => c.postMessage({ type: "knock-push", kind, callId: d.callId || null }));
-      if (kind === "opened" || kind === "quiet") {
+      const isIOS = /iPhone|iPad|iPod/i.test(self.navigator.userAgent || "");
+      if (!isIOS && (kind === "opened" || kind === "quiet")) { // iOS ends push handlers that linger; leave those notifications for the user to clear
         // Let the replacement linger briefly, then clear it so the shade doesn't fill up.
         await new Promise((r) => setTimeout(r, kind === "opened" ? 8000 : 20000));
         const open = await self.registration.getNotifications({ tag });
